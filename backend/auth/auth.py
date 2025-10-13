@@ -1,17 +1,26 @@
+# backend/auth/auth.py
+import os
+from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from passlib.context import CryptContext
 from jose import jwt, JWTError
 from sqlalchemy.orm import Session
-from backend.database import SessionLocal
-from backend.models.models import User
+from database import SessionLocal
+from models.models import User
 from pydantic import BaseModel
 
-SECRET_KEY = "supersecret"  # Change for production!
+load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    raise ValueError("No SECRET_KEY set for JWT environment variable")
+
 ALGORITHM = "HS256"
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 router = APIRouter()
 
+# ... (rest of the file remains the same)
 def get_db():
     db = SessionLocal()
     try:
@@ -53,7 +62,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(status_code=400, detail="Invalid credentials")
     token = create_access_token({"sub": user.username})
-    return {"access_token": token, "token_type": "bearer"}
+    return {"accessToken": token, "token_type": "bearer"}
 
 def get_current_user(token: str, db: Session):
     try:

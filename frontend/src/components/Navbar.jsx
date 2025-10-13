@@ -1,15 +1,8 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
 
 export default function Navbar(){
-  const navigate = useNavigate();
-  const token = localStorage.getItem("token");
-  const username = localStorage.getItem("username");
-
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("username");
-    navigate("/login");
-  };
+  const { token, username, logout } = useAuth();
 
   return (
     <nav className="bg-white shadow p-4 flex justify-between items-center">

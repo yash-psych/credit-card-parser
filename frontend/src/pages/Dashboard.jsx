@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { api, getAuthHeaders } from "../api/axios";
+import { api } from "../api/axios";
 
 export default function Dashboard(){
   const [files, setFiles] = useState([]);
   const [uploaded, setUploaded] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => setFiles(Array.from(e.target.files || []));
 
@@ -12,18 +13,25 @@ export default function Dashboard(){
     if (files.length === 0) { alert("Choose files"); return; }
     const form = new FormData();
     files.forEach(f => form.append("files", f));
+
+    setIsLoading(true);
+    setUploaded([]); // Clear previous results
+
     try {
       const res = await api.post("/files/upload", form, {
-        headers: { 
+        headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
           "Content-Type": "multipart/form-data"
         }
       });
-      setUploaded(res.data.uploaded || res.data.uploaded);
+      setUploaded(res.data.uploaded);
       alert("Uploaded successfully");
     } catch (err) {
       console.error(err);
-      alert("Upload failed");
+      const detail = err.response?.data?.detail || "An error occurred during upload.";
+      alert(`Upload failed: ${detail}`);
+    } finally {
+        setIsLoading(false);
     }
   };
 
@@ -32,8 +40,12 @@ export default function Dashboard(){
       <h2 className="text-2xl font-bold mb-4">Upload Credit Card Statements</h2>
       <form onSubmit={handleUpload} className="mb-6">
         <input type="file" multiple accept=".pdf" onChange={handleChange} className="mb-2" />
-        <button className="bg-blue-600 text-white py-2 px-4 rounded" type="submit">Upload</button>
+        <button className="bg-blue-600 text-white py-2 px-4 rounded disabled:bg-gray-400" type="submit" disabled={isLoading}>
+            {isLoading ? 'Uploading...' : 'Upload'}
+        </button>
       </form>
+
+      {isLoading && <p>Processing files, please wait...</p>}
 
       {uploaded.length > 0 && (
         <div>

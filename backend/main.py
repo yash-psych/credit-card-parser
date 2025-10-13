@@ -1,7 +1,14 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.auth import auth
-from backend.parser import parser
+from auth import auth
+from parser import parser
+from database import Base, engine
+
+# Create the database tables
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Credit Card Parser API")
 
@@ -12,7 +19,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 app.include_router(auth.router, prefix="/auth", tags=["Auth"])
 app.include_router(parser.router, prefix="/files", tags=["Files"])

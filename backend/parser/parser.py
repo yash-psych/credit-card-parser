@@ -1,14 +1,16 @@
-# backend/parser/parser.py
 import hashlib
 import pdfplumber
 from fastapi import APIRouter, UploadFile, File, HTTPException, Header, Depends
 from sqlalchemy.orm import Session
-from backend.database import SessionLocal
-from backend.models.models import FileUpload, User
-from backend.auth.auth import get_current_user
+from database import SessionLocal
+from models.models import FileUpload
+from auth.auth import get_current_user
 import json
 
 router = APIRouter()
+
+MAX_FILE_SIZE = 5 * 1024 * 1024 # 5 MB
+ACCEPTED_FILE_TYPES = ["application/pdf"]
 
 def get_db():
     db = SessionLocal()
@@ -28,16 +30,24 @@ async def upload_files(
     result = []
 
     for file in files:
+        if file.content_type not in ACCEPTED_FILE_TYPES:
+            raise HTTPException(status_code=400, detail=f"File '{file.filename}' is not a PDF.")
+        if file.size > MAX_FILE_SIZE:
+            raise HTTPException(status_code=400, detail=f"File '{file.filename}' exceeds the 5MB limit.")
+
         content = await file.read()
         file_hash = hashlib.sha256(content).hexdigest()
 
-        # Parse PDF text
-        extracted_text = ""
-        with pdfplumber.open(file.file) as pdf:
-            for page in pdf.pages:
-                extracted_text += page.extract_text() + "\n"
+        await file.seek(0)
 
-        # Example parsing logic (replace with your own)
+        extracted_text = ""
+        try:
+            with pdfplumber.open(file.file) as pdf:
+                for page in pdf.pages:
+                    extracted_text += page.extract_text() + "\n"
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Could not parse PDF file '{file.filename}': {e}")
+
         issuer = "Unknown"
         if "HDFC" in extracted_text.upper():
             issuer = "HDFC"
@@ -46,7 +56,6 @@ async def upload_files(
         elif "SBI" in extracted_text.upper():
             issuer = "SBI"
 
-        # Example extracted data (replace with real parsing logic)
         data_points = {
             "issuer": issuer,
             "last_4_digits": "1234",
@@ -59,7 +68,7 @@ async def upload_files(
             filename=file.filename,
             file_hash=file_hash,
             issuer=issuer,
-            extracted_data=json.dumps(data_points),
+            extracted_data=data_points,
             user_id=current_user.id
         )
 
@@ -79,7 +88,7 @@ def get_history(authorization: str = Header(...), db: Session = Depends(get_db))
         {
             "filename": u.filename,
             "issuer": u.issuer,
-            "data": json.loads(u.extracted_data) if u.extracted_data else {}
+            "data": u.extracted_data if u.extracted_data else {}
         }
         for u in uploads
     ]

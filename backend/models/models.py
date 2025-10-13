@@ -1,7 +1,7 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, JSON
 from sqlalchemy.orm import relationship
 from datetime import datetime
-from backend.database import Base
+from database import Base
 
 class User(Base):
     __tablename__ = "users"
@@ -20,6 +20,7 @@ class FileUpload(Base):
     filename = Column(String, index=True)
     file_hash = Column(String)
     issuer = Column(String, nullable=True)
+    extracted_data = Column(JSON, nullable=True)
     uploaded_at = Column(DateTime, default=datetime.utcnow)
     user_id = Column(Integer, ForeignKey("users.id"))
 
