@@ -1,4 +1,3 @@
-# backend/auth/auth.py
 import os
 from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, HTTPException
