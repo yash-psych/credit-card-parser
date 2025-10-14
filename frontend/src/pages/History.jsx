@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api/axios";
 
-export default function History(){
+export default function History() {
   const [history, setHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -29,18 +29,27 @@ export default function History(){
       {isLoading ? (
         <p>Loading history...</p>
       ) : history.length === 0 ? (
-        <p>No uploads yet.</p>
+        <div className="text-center py-10">
+          <p className="text-gray-500">You haven't uploaded any statements yet.</p>
+        </div>
       ) : (
-        <ul>
+        <div className="space-y-4">
           {history.map((item, idx) => (
-            <li key={idx} className="bg-white p-4 mb-2 shadow rounded">
-              <p><strong>File:</strong> {item.filename}</p>
-              <p><strong>Issuer:</strong> {item.issuer}</p>
-              <p><strong>Due Date:</strong> {item.data?.due_date}</p>
-              <p><strong>Total Due:</strong> {item.data?.total_due}</p>
-            </li>
+            <div key={idx} className="bg-white p-4 shadow rounded-lg border border-gray-200">
+              <div className="flex justify-between items-center mb-2">
+                <p className="font-semibold text-lg text-gray-800">{item.filename}</p>
+                <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">{item.issuer}</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
+                <p><strong>Card (Last 4):</strong> {item.data?.last_4_digits || 'N/A'}</p>
+                <p><strong>Statement Date:</strong> {item.data?.statement_date || 'N/A'}</p>
+                <p><strong>Due Date:</strong> {item.data?.due_date || 'N/A'}</p>
+                <p><strong>Total Due:</strong> {item.data?.total_due || 'N/A'}</p>
+                <p><strong>Minimum Due:</strong> {item.data?.minimum_due || 'N/A'}</p>
+              </div>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );
