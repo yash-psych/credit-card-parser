@@ -22,7 +22,6 @@ export default function Navbar() {
           <>
             <NavLink to="/dashboard" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>Dashboard</NavLink>
             <NavLink to="/history" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>History</NavLink>
-            <NavLink to="/data" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>Data & Export</NavLink>
             <button onClick={logout} className="text-red-500 hover:underline">Logout</button>
           </>
         ) : (

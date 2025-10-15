@@ -1,28 +1,15 @@
-from pydantic import BaseModel, EmailStr
-from datetime import datetime
-from typing import Optional
+from pydantic import BaseModel, ConfigDict
 
 class UserCreate(BaseModel):
-    """Schema for user registration"""
     username: str
-    email: EmailStr
     password: str
 
-class UserResponse(BaseModel):
-    """Schema for user response"""
-    id: int
+class UserInDB(BaseModel):
     username: str
-    email: str
-    created_at: datetime
     
-    class Config:
-        from_attributes = True
+    # Updated for Pydantic v2
+    model_config = ConfigDict(from_attributes=True)
 
 class Token(BaseModel):
-    """Schema for token response"""
     access_token: str
     token_type: str
-
-class TokenData(BaseModel):
-    """Schema for token data"""
-    user_id: Optional[int] = None

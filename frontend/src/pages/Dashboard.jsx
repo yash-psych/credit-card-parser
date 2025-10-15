@@ -3,7 +3,7 @@ import { api } from "../api/axios";
 
 export default function Dashboard() {
   const [files, setFiles] = useState([]);
-  const [uploaded, setUploaded] = useState([]);
+  const [uploaded, setUploaded] = useState([]); // This state will hold the results of the last upload
   const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => setFiles(Array.from(e.target.files || []));
@@ -18,19 +18,23 @@ export default function Dashboard() {
     files.forEach(f => form.append("files", f));
 
     setIsLoading(true);
-    setUploaded([]);
+    setUploaded([]); // Clear previous results from the dashboard view
 
     try {
+      // The backend responds with the data from the files you just uploaded
       const res = await api.post("/files/upload", form, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "multipart/form-data",
+          "Content-Type": "multipart-form-data",
         },
       });
+
+      // 1. Set the 'uploaded' state with the results from the backend
       setUploaded(res.data);
       alert("Files uploaded and processed successfully!");
-      e.target.reset(); 
+      e.target.reset(); // Clear the file input
       setFiles([]);
+
     } catch (err) {
       console.error(err);
       const detail = err.response?.data?.detail || "An error occurred during upload.";
@@ -52,9 +56,10 @@ export default function Dashboard() {
         </button>
       </form>
 
+      {/* 2. This section now correctly displays the results of the most recent upload */}
       {uploaded.length > 0 && (
         <div>
-          <h3 className="text-2xl font-semibold mb-4 text-gray-700">Extraction Results</h3>
+          <h3 className="text-2xl font-semibold mb-4 text-gray-700">Last Upload Results</h3>
           <div className="space-y-4">
             {uploaded.map((result, i) => (
               <div key={i} className="p-4 border rounded-lg bg-gray-50">
