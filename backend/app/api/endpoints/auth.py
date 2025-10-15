@@ -22,7 +22,7 @@ def register(user_in: user_schema.UserCreate, db: Session = Depends(deps.get_db)
     return new_user
 
 
-# ✅ SINGLE working login route
+# working login route
 @router.post("/login", response_model=user_schema.Token)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(deps.get_db)):
     user = db.query(models.User).filter(models.User.username == form_data.username).first()
@@ -33,7 +33,6 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    # Optional: handle suspended users
     if getattr(user, "status", None) == getattr(models, "UserStatus", None).SUSPENDED:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account is suspended")
 

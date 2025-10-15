@@ -38,13 +38,10 @@ def get_user_data_as_dataframe(db: Session, user: models.User, issuer: Optional[
     
     records = []
     for upload in uploads:
-        # --- THIS IS THE FIX ---
-        # Ensure the extracted_data string is parsed back into a dictionary
         if isinstance(upload.extracted_data, str):
             data = json.loads(upload.extracted_data)
         else:
             data = upload.extracted_data or {}
-        # --- END FIX ---
 
         records.append({
             'Filename': upload.filename,

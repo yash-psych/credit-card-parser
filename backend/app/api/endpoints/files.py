@@ -23,7 +23,6 @@ MAX_FILE_SIZE = 5 * 1024 * 1024
 ACCEPTED_FILE_TYPES = ["application/pdf"]
 
 def extract_data_from_text(text: str) -> dict:
-    # ... (this function remains the same)
     issuer = "Unknown"
     if re.search(r'HDFC Bank', text, re.IGNORECASE): issuer = "HDFC"
     elif re.search(r'ICICI Bank', text, re.IGNORECASE): issuer = "ICICI"
@@ -49,7 +48,6 @@ async def upload_files(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_user)
 ):
-    # --- ADD THIS VERIFICATION CHECK AT THE BEGINNING ---
     if not current_user.is_verified:
         raise HTTPException(
             status_code=403, 
@@ -122,7 +120,6 @@ def get_history(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_user)
 ):
-    # ... (this function remains the same)
     uploads = db.query(models.FileUpload).filter(models.FileUpload.user_id == current_user.id).order_by(models.FileUpload.uploaded_at.desc()).all()
     history = []
     for upload in uploads:
@@ -133,14 +130,12 @@ def get_history(
         })
     return history
 
-# --- EXAMPLE EXPORT ROUTE ---
-# Add this new function to your router to handle data exports
+
 @router.get("/export")
 def export_data(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_user)
 ):
-    # This check prevents unverified users from exporting
     if not current_user.is_verified:
         raise HTTPException(
             status_code=403,
@@ -150,8 +145,7 @@ def export_data(
     # Fetch all of the user's data
     user_uploads = db.query(models.FileUpload).filter(models.FileUpload.user_id == current_user.id).all()
     
-    # You can format this data as a CSV, Excel, or JSON file.
-    # Here is a simple JSON example:
+
     export_data = [
         {
             "filename": upload.filename,

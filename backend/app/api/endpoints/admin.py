@@ -16,8 +16,6 @@ def get_all_users(
     users = db.query(models.User).all()
     return {"users": users}
 
-
-# --- UPDATED: Replaced /verify with a more flexible /toggle-verify ---
 @router.post("/users/{user_id}/toggle-verify", response_model=admin_schema.UserView)
 def toggle_verify_user(
     user_id: int,
