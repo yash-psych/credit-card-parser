@@ -41,12 +41,23 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     """Standard dependency to get a user from the Authorization header."""
     return _get_user_from_token_str(token, db)
 
-# THIS IS THE FUNCTION THAT WAS MISSING
+# This is the function that was missing for your admin routes
 def get_current_admin_user(current_user: models.User = Depends(get_current_user)):
+    """Checks if the current user is an Admin or Super Admin."""
     if current_user.role not in [models.UserRole.ADMIN, models.UserRole.SUPER_ADMIN]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="The user doesn't have enough privileges"
+        )
+    return current_user
+
+# This function is also needed for the admin routes
+def get_current_super_admin_user(current_user: models.User = Depends(get_current_user)):
+    """Checks if the current user is a Super Admin."""
+    if current_user.role != models.UserRole.SUPER_ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This action requires super admin privileges"
         )
     return current_user
 
@@ -55,8 +66,7 @@ def get_current_user_from_token(
     authorization: Optional[str] = Query(None)
 ):
     """
-    Retrieves user from a token passed as an 'authorization' query parameter.
-    This is specifically for browser link-based downloads.
+    Retrieves user from a token passed as an 'authorization' query parameter for file downloads.
     """
     if not authorization:
         raise HTTPException(

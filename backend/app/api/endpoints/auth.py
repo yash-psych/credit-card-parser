@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from app.api import deps
@@ -21,18 +21,24 @@ def register(user_in: user_schema.UserCreate, db: Session = Depends(deps.get_db)
     db.refresh(new_user)
     return new_user
 
+
+# ✅ SINGLE working login route
 @router.post("/login", response_model=user_schema.Token)
-def login(db: Session = Depends(deps.get_db), form_data: OAuth2PasswordRequestForm = Depends()):
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(deps.get_db)):
     user = db.query(models.User).filter(models.User.username == form_data.username).first()
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
-            status_code=401,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
-    # Add the user's role to the token data
-    token_data = {"sub": user.username, "role": user.role.value}
+
+    # Optional: handle suspended users
+    if getattr(user, "status", None) == getattr(models, "UserStatus", None).SUSPENDED:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account is suspended")
+
+    # Create and return JWT token
+    token_data = {"sub": user.username, "role": getattr(user.role, "value", user.role)}
     access_token = create_access_token(data=token_data)
-    
+
     return {"access_token": access_token, "token_type": "bearer"}

@@ -10,6 +10,10 @@ class UserRole(str, enum.Enum):
     ADMIN = "admin"
     SUPER_ADMIN = "super_admin"
 
+class UserStatus(str, enum.Enum):
+    ACTIVE = "active"
+    SUSPENDED = "suspended"
+
 class User(Base):
     __tablename__ = "users"
 
@@ -18,6 +22,7 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     role = Column(SQLAlchemyEnum(UserRole), default=UserRole.USER, nullable=False)
     is_verified = Column(Boolean, default=False, nullable=False)
+    status = Column(SQLAlchemyEnum(UserStatus), default=UserStatus.ACTIVE, nullable=False)
 
     uploads = relationship("FileUpload", back_populates="owner")
 
