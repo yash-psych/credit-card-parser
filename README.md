@@ -7,13 +7,15 @@ This a credit card parser which helps to parse credit card statements of five cr
 3. ICICI
 4. State Bank of India|SBI
 5. American Express|AMEX
+
+
 & on the following datapoints
         {
-        issuer name
-        last_4_digits
-        card_variant
-        billing_cycle
-        payment_due_date
+        issuer name,
+        last_4_digits,
+        card_variant,
+        billing_cycle,
+        payment_due_date,
         total_balance
         }
 
