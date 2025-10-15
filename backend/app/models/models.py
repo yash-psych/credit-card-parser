@@ -19,7 +19,8 @@ class FileUpload(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     filename = Column(String, index=True)
-    file_hash = Column(String) # Removed unique=True from this line
+    # The 'unique=True' constraint was removed to allow different users to upload the same file
+    file_hash = Column(String) 
     issuer = Column(String, nullable=True)
     extracted_data = Column(JSON, nullable=True)
     uploaded_at = Column(DateTime, default=datetime.utcnow)

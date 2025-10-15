@@ -53,14 +53,12 @@ async def upload_files(
         content = await file.read()
         file_hash = hashlib.sha256(content).hexdigest()
 
-        # Correctly check for a file with the same hash FOR THE CURRENT USER
         existing_file = db.query(models.FileUpload).filter(
             models.FileUpload.file_hash == file_hash,
             models.FileUpload.user_id == current_user.id
         ).first()
 
         if existing_file:
-            # If the user has already uploaded this file, skip it
             print(f"User {current_user.username} already uploaded file {file.filename}. Skipping.")
             continue
 

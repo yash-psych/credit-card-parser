@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.endpoints import auth, files
+from app.api.endpoints import auth, files, export  # Ensure 'export' is imported here
 from app.models.models import Base
 from app.db.session import engine
 
@@ -10,7 +10,7 @@ app = FastAPI(title="Credit Card Parser API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # This allows all origins
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -18,6 +18,7 @@ app.add_middleware(
 
 app.include_router(auth.router, prefix="/auth", tags=["Auth"])
 app.include_router(files.router, prefix="/files", tags=["Files"])
+app.include_router(export.router, prefix="/data", tags=["Data"])
 
 @app.get("/")
 def read_root():
