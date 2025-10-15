@@ -1,27 +1,34 @@
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 
-export default function Navbar(){
+export default function Navbar() {
   const { token, username, logout } = useAuth();
 
-  return (
-    <nav className="bg-white shadow p-4 flex justify-between items-center">
-      <div className="flex items-center space-x-4">
-        <div className="text-blue-600 font-bold text-lg">💳 Credit Parser</div>
-        {token && <div className="text-sm text-gray-600">Welcome, {username}</div>}
-      </div>
+  const activeLinkStyle = {
+    textDecoration: 'underline',
+    color: '#2563eb'
+  };
 
-      <div className="space-x-4">
+  return (
+    <nav className="bg-white shadow-md p-4 flex justify-between items-center">
+      <div className="flex items-center space-x-4">
+        <NavLink to="/" className="text-blue-600 font-bold text-xl">
+          💳 Credit Parser
+        </NavLink>
+        {token && <span className="text-gray-600">Welcome, {username}!</span>}
+      </div>
+      <div className="space-x-6">
         {token ? (
           <>
-            <Link to="/dashboard" className="text-sm hover:underline">Dashboard</Link>
-            <Link to="/history" className="text-sm hover:underline">History</Link>
-            <button onClick={logout} className="text-red-500 text-sm">Logout</button>
+            <NavLink to="/dashboard" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>Dashboard</NavLink>
+            <NavLink to="/history" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>History</NavLink>
+            <NavLink to="/data" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>Data & Export</NavLink>
+            <button onClick={logout} className="text-red-500 hover:underline">Logout</button>
           </>
         ) : (
           <>
-            <Link to="/login" className="text-sm hover:underline">Login</Link>
-            <Link to="/register" className="text-sm hover:underline">Register</Link>
+            <NavLink to="/login" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>Login</NavLink>
+            <NavLink to="/register" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>Register</NavLink>
           </>
         )}
       </div>

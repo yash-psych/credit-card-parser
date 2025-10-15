@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { api } from "../api/axios";
 
-export default function Dashboard(){
+export default function Dashboard() {
   const [files, setFiles] = useState([]);
   const [uploaded, setUploaded] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -10,54 +10,68 @@ export default function Dashboard(){
 
   const handleUpload = async (e) => {
     e.preventDefault();
-    if (files.length === 0) { alert("Choose files"); return; }
+    if (files.length === 0) {
+      alert("Please choose at least one PDF file to upload.");
+      return;
+    }
     const form = new FormData();
     files.forEach(f => form.append("files", f));
 
     setIsLoading(true);
-    setUploaded([]); // Clear previous results
+    setUploaded([]);
 
     try {
       const res = await api.post("/files/upload", form, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "multipart/form-data"
-        }
+          "Content-Type": "multipart/form-data",
+        },
       });
-      setUploaded(res.data.uploaded);
-      alert("Uploaded successfully");
+      setUploaded(res.data);
+      alert("Files uploaded and processed successfully!");
+      e.target.reset(); 
+      setFiles([]);
     } catch (err) {
       console.error(err);
       const detail = err.response?.data?.detail || "An error occurred during upload.";
       alert(`Upload failed: ${detail}`);
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <h2 className="text-2xl font-bold mb-4">Upload Credit Card Statements</h2>
-      <form onSubmit={handleUpload} className="mb-6">
-        <input type="file" multiple accept=".pdf" onChange={handleChange} className="mb-2" />
-        <button className="bg-blue-600 text-white py-2 px-4 rounded disabled:bg-gray-400" type="submit" disabled={isLoading}>
-            {isLoading ? 'Uploading...' : 'Upload'}
+    <div className="p-6 max-w-4xl mx-auto bg-white rounded-lg shadow-md mt-10">
+      <h2 className="text-3xl font-bold mb-6 text-gray-800 border-b pb-4">Upload Statements</h2>
+      <p className="text-gray-600 mb-6">Welcome! Upload your credit card statements to extract key information.</p>
+      
+      <form onSubmit={handleUpload} className="mb-6 space-y-4">
+        <input type="file" multiple accept=".pdf" onChange={handleChange} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+        <button className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 transition duration-200 disabled:bg-gray-400" type="submit" disabled={isLoading}>
+          {isLoading ? 'Processing...' : 'Upload and Extract Data'}
         </button>
       </form>
 
-      {isLoading && <p>Processing files, please wait...</p>}
-
       {uploaded.length > 0 && (
         <div>
-          <h3 className="text-xl font-semibold mb-2">Results</h3>
-          <ul>
-            {uploaded.map((u, i) => (
-              <li key={i} className="p-2 border-b">
-                <div><strong>{u.file || u.filename}</strong></div>
-                <div className="text-sm text-gray-600">Issuer: {u.issuer}</div>
-              </li>
+          <h3 className="text-2xl font-semibold mb-4 text-gray-700">Extraction Results</h3>
+          <div className="space-y-4">
+            {uploaded.map((result, i) => (
+              <div key={i} className="p-4 border rounded-lg bg-gray-50">
+                <div className="flex justify-between items-center mb-2">
+                  <p className="font-bold text-gray-800">{result.filename}</p>
+                  <span className="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">{result.issuer}</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
+                  <p><strong>Card (Last 4):</strong> {result.data?.last_4_digits || 'N/A'}</p>
+                  <p><strong>Card Variant:</strong> {result.data?.card_variant || 'N/A'}</p>
+                  <p><strong>Billing Cycle:</strong> {result.data?.billing_cycle || 'N/A'}</p>
+                  <p><strong>Payment Due Date:</strong> {result.data?.payment_due_date || 'N/A'}</p>
+                  <p><strong>Total Balance:</strong> {result.data?.total_balance || 'N/A'}</p>
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       )}
     </div>
