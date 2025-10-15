@@ -23,9 +23,9 @@ This a credit card parser which helps to parse credit card statements of five cr
 Installation & Usage
 
 Prerequisites:
-            Python 
-            Node.js
-            GPL Ghostscripts
+            Python, 
+            Node.js,
+            GPL Ghostscripts,
             Tesseract-OCR 
 
 
