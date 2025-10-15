@@ -65,6 +65,8 @@ export default function AdminDashboard() {
               <tr>
                 <th className="py-3 px-4 text-left text-sm font-semibold text-neutral-500 uppercase">Username</th>
                 <th className="py-3 px-4 text-left text-sm font-semibold text-neutral-500 uppercase">Role</th>
+                {/* --- NEW COLUMN HEADER --- */}
+                <th className="py-3 px-4 text-left text-sm font-semibold text-neutral-500 uppercase">Verified</th>
                 <th className="py-3 px-4 text-left text-sm font-semibold text-neutral-500 uppercase">Status</th>
                 <th className="py-3 px-4 text-center text-sm font-semibold text-neutral-500 uppercase">Actions</th>
               </tr>
@@ -74,6 +76,14 @@ export default function AdminDashboard() {
                 <tr key={user.id} className="hover:bg-neutral-50">
                   <td className="py-3 px-4 border-b">{user.username}</td>
                   <td className="py-3 px-4 border-b">{user.role}</td>
+                  {/* --- NEW COLUMN DATA --- */}
+                  <td className="py-3 px-4 border-b">
+                    {user.is_verified ? (
+                      <span className="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Verified</span>
+                    ) : (
+                      <span className="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Not Verified</span>
+                    )}
+                  </td>
                   <td className="py-3 px-4 border-b">
                     {user.status === 'active' ? (
                       <span className="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Active</span>
@@ -82,14 +92,24 @@ export default function AdminDashboard() {
                     )}
                   </td>
                   <td className="py-3 px-4 border-b text-center space-x-2">
-                    {/* --- Action Buttons --- */}
                     {loggedInUser?.sub !== user.username && user.role !== 'super_admin' && (
                       <>
-                        {loggedInUser?.role === 'super_admin' && user.role === 'user' && (
-                          <button onClick={() => handleApiCall(`/admin/users/${user.id}/promote`)} className="bg-green-500 text-white text-xs py-1 px-2 rounded hover:bg-green-600">Promote</button>
-                        )}
-                        {loggedInUser?.role === 'super_admin' && user.role === 'admin' && (
-                          <button onClick={() => handleApiCall(`/admin/users/${user.id}/demote`)} className="bg-yellow-500 text-white text-xs py-1 px-2 rounded hover:bg-yellow-600">Demote</button>
+                        {loggedInUser?.role === 'super_admin' && (
+                          <>
+                            {/* --- NEW ACTION BUTTON --- */}
+                            <button
+                              onClick={() => handleApiCall(`/admin/users/${user.id}/toggle-verify`)}
+                              className={`text-white text-xs py-1 px-2 rounded ${user.is_verified ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-500 hover:bg-green-600'}`}
+                            >
+                              {user.is_verified ? 'Unverify' : 'Verify'}
+                            </button>
+                            {user.role === 'user' && (
+                              <button onClick={() => handleApiCall(`/admin/users/${user.id}/promote`)} className="bg-green-500 text-white text-xs py-1 px-2 rounded hover:bg-green-600">Promote</button>
+                            )}
+                            {user.role === 'admin' && (
+                              <button onClick={() => handleApiCall(`/admin/users/${user.id}/demote`)} className="bg-yellow-500 text-white text-xs py-1 px-2 rounded hover:bg-yellow-600">Demote</button>
+                            )}
+                          </>
                         )}
                         <button onClick={() => handleApiCall(`/admin/users/${user.id}/toggle-suspend`)} className={`text-white text-xs py-1 px-2 rounded ${user.status === 'active' ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'}`}>
                           {user.status === 'active' ? 'Suspend' : 'Unsuspend'}

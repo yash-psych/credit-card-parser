@@ -49,6 +49,13 @@ async def upload_files(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_user)
 ):
+    # --- ADD THIS VERIFICATION CHECK AT THE BEGINNING ---
+    if not current_user.is_verified:
+        raise HTTPException(
+            status_code=403, 
+            detail="Your account is not verified. Please contact an admin to enable file uploads."
+        )
+
     processed_files = []
     skipped_files = []
     for file in files:
@@ -125,3 +132,34 @@ def get_history(
             "data": json.loads(upload.extracted_data) if isinstance(upload.extracted_data, str) else upload.extracted_data
         })
     return history
+
+# --- EXAMPLE EXPORT ROUTE ---
+# Add this new function to your router to handle data exports
+@router.get("/export")
+def export_data(
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_user)
+):
+    # This check prevents unverified users from exporting
+    if not current_user.is_verified:
+        raise HTTPException(
+            status_code=403,
+            detail="Your account is not verified. Please contact an admin to enable data export."
+        )
+
+    # Fetch all of the user's data
+    user_uploads = db.query(models.FileUpload).filter(models.FileUpload.user_id == current_user.id).all()
+    
+    # You can format this data as a CSV, Excel, or JSON file.
+    # Here is a simple JSON example:
+    export_data = [
+        {
+            "filename": upload.filename,
+            "issuer": upload.issuer,
+            "uploaded_at": upload.uploaded_at,
+            "data": json.loads(upload.extracted_data) if isinstance(upload.extracted_data, str) else upload.extracted_data,
+        }
+        for upload in user_uploads
+    ]
+
+    return export_data

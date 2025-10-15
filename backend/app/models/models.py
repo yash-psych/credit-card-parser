@@ -1,4 +1,7 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, JSON, Enum as SQLAlchemyEnum, Boolean
+from sqlalchemy import (
+    Column, Integer, String, ForeignKey, DateTime, JSON,
+    Enum as SQLAlchemyEnum, Boolean, UniqueConstraint
+)
 from sqlalchemy.orm import relationship, declarative_base
 from datetime import datetime
 import enum
@@ -29,12 +32,17 @@ class User(Base):
 
 class FileUpload(Base):
     __tablename__ = "uploads"
+
     id = Column(Integer, primary_key=True, index=True)
-    filename = Column(String, index=True)
-    file_hash = Column(String, unique=True)
+    filename = Column(String, index=True, nullable=False)
+    file_hash = Column(String, index=True, nullable=False)  # 🔹 removed unique=True
     issuer = Column(String, nullable=True)
     extracted_data = Column(JSON, nullable=True)
     uploaded_at = Column(DateTime, default=datetime.utcnow)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
     owner = relationship("User", back_populates="uploads")
+
+    __table_args__ = (
+        UniqueConstraint('file_hash', 'user_id', name='uix_file_hash_user'),
+    )
