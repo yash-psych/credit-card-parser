@@ -2,35 +2,47 @@ import { NavLink } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 
 export default function Navbar() {
-  const { token, username, logout } = useAuth();
+  const { token, user, logout } = useAuth();
 
-  const activeLinkStyle = {
-    textDecoration: 'underline',
-    color: '#2563eb'
+  const getLinkClass = ({ isActive }) => {
+    const baseClass = "text-sm font-medium transition-colors hover:text-primary";
+    return isActive ? `${baseClass} text-primary` : `${baseClass} text-neutral-500`;
   };
 
   return (
-    <nav className="bg-white shadow-md p-4 flex justify-between items-center">
-      <div className="flex items-center space-x-4">
-        <NavLink to="/" className="text-blue-600 font-bold text-xl">
-          💳 Credit Parser
-        </NavLink>
-        {token && <span className="text-gray-600">Welcome, {username}!</span>}
+    <header className="sticky top-0 z-50 w-full border-b border-neutral-200 bg-white/80 backdrop-blur-md">
+      <div className="container mx-auto flex h-16 items-center justify-between px-6">
+        <div className="flex items-center gap-6">
+          <NavLink to="/" className="flex items-center gap-2 text-lg font-bold text-primary">
+            <span>💳</span>
+            <span>Credit Parser</span>
+          </NavLink>
+          {user && <span className="text-sm text-neutral-500">Welcome, {user.sub}!</span>}
+        </div>
+        
+        <nav className="flex items-center gap-6">
+          {token && user ? (
+            <>
+              {['admin', 'super_admin'].includes(user.role) ? (
+                <>
+                  <NavLink to="/admin/dashboard" className={getLinkClass}>Admin Dashboard</NavLink>
+                </>
+              ) : (
+                <>
+                  <NavLink to="/dashboard" className={getLinkClass}>Dashboard</NavLink>
+                  <NavLink to="/history" className={getLinkClass}>History</NavLink>
+                </>
+              )}
+              <button onClick={logout} className="text-sm font-medium text-danger hover:text-danger-hover">Logout</button>
+            </>
+          ) : (
+            <>
+              <NavLink to="/login" className={getLinkClass}>User Login</NavLink>
+              <NavLink to="/admin/login" className={getLinkClass}>Admin Login</NavLink>
+            </>
+          )}
+        </nav>
       </div>
-      <div className="space-x-6">
-        {token ? (
-          <>
-            <NavLink to="/dashboard" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>Dashboard</NavLink>
-            <NavLink to="/history" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>History</NavLink>
-            <button onClick={logout} className="text-red-500 hover:underline">Logout</button>
-          </>
-        ) : (
-          <>
-            <NavLink to="/login" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>Login</NavLink>
-            <NavLink to="/register" style={({ isActive }) => isActive ? activeLinkStyle : undefined}>Register</NavLink>
-          </>
-        )}
-      </div>
-    </nav>
+    </header>
   );
 }

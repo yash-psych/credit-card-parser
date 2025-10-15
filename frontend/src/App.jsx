@@ -5,16 +5,23 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import History from "./pages/History";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminLogin from "./pages/AdminLogin";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminProtectedRoute from "./components/AdminProtectedRoute";
 
 export default function App() {
   return (
-    <div>
+    <div className="min-h-screen">
       <Navbar />
-      <main className="p-4">
+      <main className="container mx-auto px-6 py-8">
         <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          {/* Auth Routes */}
           <Route path="/login" element={<Login />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/register" element={<Register />} />
+          
+          {/* User Routes */}
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route
             path="/dashboard"
             element={<ProtectedRoute><Dashboard /></ProtectedRoute>}
@@ -22,6 +29,12 @@ export default function App() {
           <Route
             path="/history"
             element={<ProtectedRoute><History /></ProtectedRoute>}
+          />
+
+          {/* Admin Routes */}
+          <Route
+            path="/admin/dashboard"
+            element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>}
           />
         </Routes>
       </main>

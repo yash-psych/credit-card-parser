@@ -41,10 +41,18 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     """Standard dependency to get a user from the Authorization header."""
     return _get_user_from_token_str(token, db)
 
+# THIS IS THE FUNCTION THAT WAS MISSING
+def get_current_admin_user(current_user: models.User = Depends(get_current_user)):
+    if current_user.role not in [models.UserRole.ADMIN, models.UserRole.SUPER_ADMIN]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="The user doesn't have enough privileges"
+        )
+    return current_user
 
 def get_current_user_from_token(
     db: Session = Depends(get_db),
-    authorization: Optional[str] = Query(None) 
+    authorization: Optional[str] = Query(None)
 ):
     """
     Retrieves user from a token passed as an 'authorization' query parameter.

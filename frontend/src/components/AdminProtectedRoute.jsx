@@ -3,7 +3,7 @@ import useAuth from "../hooks/useAuth";
 
 export default function AdminProtectedRoute({ children }) {
   const { user } = useAuth();
-  if (!user || user.role !== 'admin') {
+  if (!user || !['admin', 'super_admin'].includes(user.role)) {
     return <Navigate to="/dashboard" replace />;
   }
   return children;

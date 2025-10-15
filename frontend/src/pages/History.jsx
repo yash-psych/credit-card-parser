@@ -87,16 +87,15 @@ export default function History() {
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-8">
       <div className="bg-white p-6 rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold mb-4">Upload History</h2>
+        <h2 className="text-2xl font-bold mb-4 text-gray-800">Upload History</h2>
         
-        {/* Filter Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Filter by Bank/Issuer</label>
             <select
               value={filters.issuer}
               onChange={(e) => handleFilterChange('issuer', e.target.value)}
-              className="w-full p-2 border rounded-md"
+              className="w-full p-2 border rounded-md text-gray-800"
             >
               <option value="">All Issuers</option>
               {allIssuers.map(issuer => <option key={issuer} value={issuer}>{issuer}</option>)}
@@ -119,8 +118,8 @@ export default function History() {
         </div>
         
         <div className="flex items-center justify-between border-t pt-4">
-            <div className="flex items-center gap-2 text-sm">
-                <span className="font-semibold">Active Filters:</span>
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+                <span className="font-semibold text-gray-700">Active Filters:</span>
                 {filters.issuer ? <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Bank: {filters.issuer}</span> : <span>None</span>}
                 {filters.period ? <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full">Period: {timePeriodLabels[filters.period]}</span> : null}
             </div>
@@ -130,9 +129,8 @@ export default function History() {
         </div>
       </div>
 
-      {/* Export Section */}
       <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-xl font-semibold mb-4">Export Filtered Data</h3>
+          <h3 className="text-xl font-semibold mb-4 text-gray-800">Export Filtered Data</h3>
           <div className="flex space-x-4">
             <button onClick={() => handleExport('xlsx')} className="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition">Export to Excel (.xlsx)</button>
             <button onClick={() => handleExport('pdf')} className="bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition">Export to PDF (.pdf)</button>
@@ -140,9 +138,8 @@ export default function History() {
           </div>
       </div>
 
-      {/* History List Section */}
       {isLoading ? (
-        <p>Loading history...</p>
+        <p className="text-center text-gray-500">Loading history...</p>
       ) : error ? (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
           <strong className="font-bold">Error:</strong>

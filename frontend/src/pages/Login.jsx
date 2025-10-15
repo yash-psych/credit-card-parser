@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { api } from "../api/axios";
 import useAuth from "../hooks/useAuth";
 
@@ -12,34 +13,39 @@ export default function Login() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const res = await api.post("/auth/login", new URLSearchParams({
-        username, password
-      }), {
+      const res = await api.post("/auth/login", new URLSearchParams({ username, password }), {
         headers: { "Content-Type": "application/x-www-form-urlencoded" }
       });
-
       const token = res.data.access_token;
       if (!token) throw new Error("No token returned");
-      login(token, username);
+      login(token);
     } catch (err) {
       console.error(err);
-      const detail = err.response?.data?.detail || "Please check your credentials.";
-      alert(`Login failed: ${detail}`);
+      alert(`Login failed: ${err.response?.data?.detail || "Please check your credentials."}`);
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex justify-center items-center mt-20">
-      <form onSubmit={handleLogin} className="bg-white p-8 rounded-lg shadow-lg w-full max-w-sm space-y-6">
-        <h2 className="text-2xl font-bold text-center text-gray-800">Login</h2>
-        <input value={username} onChange={e => setUsername(e.target.value)} placeholder="Username" className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required />
-        <input value={password} onChange={e => setPassword(e.target.value)} type="password" placeholder="Password" className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required />
-        <button type="submit" className="w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 transition duration-200" disabled={isLoading}>
-          {isLoading ? 'Logging in...' : 'Login'}
-        </button>
-      </form>
+    <div className="flex justify-center items-center min-h-[calc(100vh-10rem)] px-4">
+      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-neutral-800">Welcome Back</h1>
+          <p className="mt-2 text-neutral-500">Please sign in to continue</p>
+        </div>
+        <form onSubmit={handleLogin} className="space-y-6">
+          <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Username" className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-neutral-800" required />
+          <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="Password" className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-neutral-800" required />
+          <button type="submit" className="w-full py-3 text-white bg-primary rounded-lg hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors duration-300 disabled:opacity-50" disabled={isLoading}>
+            {isLoading ? 'Signing In...' : 'Sign In'}
+          </button>
+        </form>
+        <p className="text-sm text-center text-neutral-500">
+          Don't have an account?{" "}
+          <Link to="/register" className="font-medium text-primary hover:underline">Register</Link>
+        </p>
+      </div>
     </div>
   );
 }

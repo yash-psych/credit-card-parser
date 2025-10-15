@@ -10,9 +10,6 @@ router = APIRouter()
 
 @router.post("/register", response_model=user_schema.UserInDB)
 def register(user_in: user_schema.UserCreate, db: Session = Depends(deps.get_db)):
-    """
-    Handles user registration. Expects a JSON payload with username and password.
-    """
     db_user = db.query(models.User).filter(models.User.username == user_in.username).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Username already registered")
@@ -26,15 +23,16 @@ def register(user_in: user_schema.UserCreate, db: Session = Depends(deps.get_db)
 
 @router.post("/login", response_model=user_schema.Token)
 def login(db: Session = Depends(deps.get_db), form_data: OAuth2PasswordRequestForm = Depends()):
-    """
-    Handles user login. Expects form data (application/x-www-form-urlencoded).
-    """
     user = db.query(models.User).filter(models.User.username == form_data.username).first()
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
-            status_code=401, # Use 401 for unauthorized access
+            status_code=401,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token = create_access_token(data={"sub": user.username})
+    
+    # Add the user's role to the token data
+    token_data = {"sub": user.username, "role": user.role.value}
+    access_token = create_access_token(data=token_data)
+    
     return {"access_token": access_token, "token_type": "bearer"}

@@ -11,6 +11,11 @@ from sqlalchemy.orm import Session
 from app.api import deps
 from app.models import models
 from app.schemas import file as file_schema
+from pydantic import BaseModel
+
+class UploadResponse(BaseModel):
+    processed: List[file_schema.FileUploadResponse]
+    skipped: List[str] # List of filenames that were skipped
 
 router = APIRouter()
 
@@ -18,6 +23,7 @@ MAX_FILE_SIZE = 5 * 1024 * 1024
 ACCEPTED_FILE_TYPES = ["application/pdf"]
 
 def extract_data_from_text(text: str) -> dict:
+    # ... (this function remains the same)
     issuer = "Unknown"
     if re.search(r'HDFC Bank', text, re.IGNORECASE): issuer = "HDFC"
     elif re.search(r'ICICI Bank', text, re.IGNORECASE): issuer = "ICICI"
@@ -37,13 +43,14 @@ def extract_data_from_text(text: str) -> dict:
         "total_balance": total_due_pattern.group(1) if total_due_pattern else "N/A",
     }
 
-@router.post("/upload", response_model=List[file_schema.FileUploadResponse])
+@router.post("/upload", response_model=UploadResponse)
 async def upload_files(
     files: List[UploadFile] = File(...),
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_user)
 ):
-    results = []
+    processed_files = []
+    skipped_files = []
     for file in files:
         if file.content_type not in ACCEPTED_FILE_TYPES:
             raise HTTPException(status_code=400, detail=f"File '{file.filename}' is not a PDF.")
@@ -59,7 +66,7 @@ async def upload_files(
         ).first()
 
         if existing_file:
-            print(f"User {current_user.username} already uploaded file {file.filename}. Skipping.")
+            skipped_files.append(file.filename)
             continue
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
@@ -91,25 +98,24 @@ async def upload_files(
             db.commit()
             db.refresh(new_upload)
             
-            results.append({"filename": file.filename, "issuer": data.get("issuer"), "data": data})
+            processed_files.append({"filename": file.filename, "issuer": data.get("issuer"), "data": data})
 
         except Exception as e:
             db.rollback()
             print(f"An error occurred during file processing: {e}")
             raise HTTPException(status_code=500, detail="An unexpected error occurred during file processing.")
         finally:
-            if os.path.exists(temp_file_path):
-                os.remove(temp_file_path)
-            if os.path.exists(ocr_output_path):
-                os.remove(ocr_output_path)
+            if os.path.exists(temp_file_path): os.remove(temp_file_path)
+            if os.path.exists(ocr_output_path): os.remove(ocr_output_path)
                 
-    return results
+    return {"processed": processed_files, "skipped": skipped_files}
 
 @router.get("/history", response_model=List[file_schema.HistoryResponse])
 def get_history(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_user)
 ):
+    # ... (this function remains the same)
     uploads = db.query(models.FileUpload).filter(models.FileUpload.user_id == current_user.id).order_by(models.FileUpload.uploaded_at.desc()).all()
     history = []
     for upload in uploads:
